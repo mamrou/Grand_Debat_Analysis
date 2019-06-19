@@ -6,16 +6,15 @@ from dash.dependencies import Input, Output
 import plotly.graph_objs as go
 import plotly.plotly as py
 import json
-from utils import plotly_wordcloud #, word_cloud_image
+from utils import *
+#, word_cloud_image
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-
+print('run')
 # Load data
 data_dem = json.loads(open('data/democratie.json').read())
 data_fisc = json.loads(open('data/fiscalite.json').read())
 data_dict = {"Dem":data_dem, "Fis":data_fisc}
-
-overall_stats = ['n_questions', 'n_answers','n_participants', 'answer_rate', 'avg_answer_per_participant']
 
 def get_data(data_key):
     return data_dict[data_key]
@@ -47,12 +46,13 @@ def get_open_questions_words(data):
         try:
             if data[key]['type'] == 'open':
                 # Take Top 20 occurences in the question corpus
-                top_words_list[key.upper()] = data[key]['word_freq'][0:20]
+                top_words_list[key.upper()] = data[key]['word_freq'][0:50]
         except:
             pass
 
     return top_words_list
 
+overall_stats = ['n_questions', 'n_answers','n_participants', 'answer_rate', 'avg_answer_per_participant']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
@@ -137,7 +137,6 @@ app.layout = html.Div([
 def update_page(selected_theme, selected_question):
     data = get_data(selected_theme)
     questions_num, answer_rate, question_type, questions, questions_formated = get_questions(data)
-
     if selected_question==None:
         selected_question=questions_num[0]
 
@@ -178,8 +177,8 @@ def update_page(selected_theme, selected_question):
         question_layout = None
     else:
         top_words = top_words_list[selected_question]
-        question_data, question_layout = plotly_wordcloud(top_words)
-        #question_data, question_layout = word_cloud_image(top_words)
+        #question_data, question_layout = plotly_wordcloud(top_words)
+        question_data, question_layout = word_cloud_image(top_words)
 
     figure_answer_rate = {
         'data':[go.Bar(

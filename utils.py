@@ -44,7 +44,6 @@ def plotly_wordcloud(top_words):
     layout = go.Layout({'xaxis': {'showgrid': False, 'showticklabels': False, 'zeroline': False},
                         'yaxis': {'showgrid': False, 'showticklabels': False, 'zeroline': False}})
 
-    #figure = go.Figure(data=[data], layout=layout)
     return [data], layout
 
 
@@ -59,9 +58,14 @@ def word_cloud_image(top_words):
     wordcloud.generate_from_frequencies(word_freq_dict)
     word_cloud_image = wordcloud.to_image()
 
-    img_width = 2240
+    img_width = 2200
     img_height = 1000
     scale_factor = 0.5
+
+    data=[{'x': [0, img_width*scale_factor],
+            'y': [0, img_height*scale_factor],
+            'mode': 'markers',
+            'marker': {'opacity': 0}}]
 
     layout = go.Layout(
         xaxis = go.layout.XAxis(
@@ -88,9 +92,6 @@ def word_cloud_image(top_words):
             source=word_cloud_image)]
     )
 
-    data=[{'x': [0, img_width*scale_factor],
-            'y': [0, img_height*scale_factor],
-            'mode': 'markers',
-            'marker': {'opacity': 0}}]
+    #data = []
 
     return data, layout

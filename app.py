@@ -19,7 +19,7 @@ data_fisc = json.loads(open('data/fiscalite.json').read())
 data_eco = json.loads(open('data/ecologie.json').read())
 data_org = json.loads(open('data/organisation.json').read())
 
-themes = {'Dem':"Démocration et Citoyenneté", 'Fis':"Fiscalité", 'Eco':"Ecologie", 'Org':"Organisation"}
+themes = {'Dem':"Démocratie et Citoyenneté", 'Fis':"Fiscalité", 'Eco':"Ecologie", 'Org':"Organisation"}
 data_dict = {'Dem':data_dem, 'Fis':data_fisc, 'Eco':data_eco, 'Org':data_org}
 
 overall_stats = ['n_questions', 'n_answers','n_participants', 'answer_rate', 'avg_answer_per_participant']
@@ -91,17 +91,50 @@ def color_question(questions_num, selected_question, answer_rate):
             bar_colors.append(colors["bar_selected"])
 
         # Annotation list
-        annotations.append(dict(x=question, y=answer_rate[i], text="{0:.0f}".format(answer_rate[i]*100) + " %",
-                            font=dict(family='Arial', size=20,
+        annotations.append(dict(x=question, y=answer_rate[i], text="{0:.0f}".format(answer_rate[i]*100) + "%",
+                            font=dict(family='Arial', size=14,
                             color=bar_colors[i]),
                             showarrow=False,
-                            yshift = 20))
+                            yshift = 16))
 
     return bar_colors, annotations
 
-def theme_opacity(themes, selected_theme):
+def theme_opacity(themes, selected_theme, n_questions, n_answers, n_participants, avg_answer_per_participant):
     bar_opacity = []
     annotations = []
+
+    annotations.append(dict(x=2, y=max(n_questions), text="# Questions",
+                                xref='x1',
+                                yref='y1',
+                                showarrow=False,
+                                yshift = 35,
+                                xshift=-20)
+                                )
+    annotations.append(dict(x=2, y=max(list(n_answers.values())), text="# Answers",
+                                xref='x2',
+                                yref='y2',
+                                showarrow=False,
+                                yshift = 35,
+                                xshift=-20)
+                                )
+
+    annotations.append(dict(x=2, y=max(n_participants), text="# Participants",
+                                xref='x3',
+                                yref='y3',
+                                showarrow=False,
+                                yshift = 35,
+                                xshift=-20)
+                                )
+
+    annotations.append(dict(x=2, y=max(avg_answer_per_participant), text="#Answers/Participant",
+                                xref='x4',
+                                yref='y4',
+                                showarrow=False,
+                                yshift = 35,
+                                xshift=-20)
+                                )
+
+
     for i,theme in enumerate(list(themes.keys())):
         # Defining color
         if theme != selected_theme:
@@ -109,15 +142,32 @@ def theme_opacity(themes, selected_theme):
         else:
             bar_opacity.append(transparency["full"])
 
-        # Annotation list
-        '''
-        annotations.append(dict(x=question, y=answer_rate[i], text="{0:.0f}".format(answer_rate[i]*100) + " %",
-                            font=dict(family='Arial', size=20,
-                            color='white'),
-                            showarrow=False,
-                            yshift = 20))
-        '''
-    return bar_opacity
+        annotations.append(dict(x=theme, y=n_questions[i], text=str(n_questions[i]),
+                                    xref='x1',
+                                    yref='y1',
+                                    showarrow=False,
+                                    yshift = 14)
+                                    )
+        annotations.append(dict(x=theme, y=list(n_answers.values())[i], text="{0:.1f}".format(list(n_answers.values())[i]/1e6) + "M",# annotation point
+                                    xref='x2',
+                                    yref='y2',
+                                    showarrow=False,
+                                    yshift = 14)
+                                    )
+        annotations.append(dict(x=theme, y=n_participants[i], text="{0:.0f}".format(n_participants[i]/1000)+"k",
+                                    xref='x3',
+                                    yref='y3',
+                                    showarrow=False,
+                                    yshift = 14)
+                                    )
+        annotations.append(dict(x=theme, y=avg_answer_per_participant[i], text="{0:.0f}".format(avg_answer_per_participant[i]),
+                                    xref='x4',
+                                    yref='y4',
+                                    showarrow=False,
+                                    yshift = 14)
+                                    )
+
+    return bar_opacity, annotations
 
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets )
@@ -139,8 +189,6 @@ chart_axis_font = dict(
                         color=text_color),
                     tickfont=dict(
                         color=text_color))
-
-
 
 global_stats_axis_font = [
     dict(
@@ -203,17 +251,22 @@ app.layout = html.Div([
 
         ),
 
-    # questions
 
 
     html.Div([
-        html.H2('Choix des questions',
-                style={
-                    'textAlign': 'center',
-                    'color': "black"}
-                ),
-        dcc.Dropdown(id='question_choice'),
-        dcc.Graph(id='graph_question')],
+        html.Div([dcc.Graph(id='global_stats')],
+                style={'width': '100%',
+                        'height': '40%'}),
+                            
+        html.Div([
+            html.H2('Choix des questions',
+                    style={
+                        'textAlign': 'center',
+                        'color': "black"}
+                    ),
+            dcc.Dropdown(id='question_choice'),
+
+            html.Div(id='left_div')],
 
         style={'width': '59%',
                'height': '100%',
@@ -230,9 +283,9 @@ app.layout = html.Div([
                     ),
 
             dcc.Graph(id='answer_rate'),
-            dcc.Graph(id='global_stats')],
+            ],
 
-            style={'width': '40.5%',
+            style={'width': '41%',
                     'height': '100%',
                     'float': 'right',
                     'display': 'inline-block',
@@ -242,7 +295,8 @@ app.layout = html.Div([
                     ],
 
             style={'width': '100%',
-                    'height': '100%'})
+                    'height': '60%'}),
+                    ])
 
 
 
@@ -250,13 +304,13 @@ app.layout = html.Div([
     [Output('question_choice', 'options'),
     Output('answer_rate', 'figure'),
     Output('global_stats', 'figure'),
-    Output('graph_question', 'figure')],
+    Output('left_div', 'children')],
     [Input('tabs', 'value'),
     Input('question_choice','value')])
 
 def update_page(selected_theme, selected_question):
     data = get_data(selected_theme)
-    n_answer = get_num_answer(selected_theme)
+    #n_answer = get_num_answer(selected_theme)
     questions_num, answer_rate, question_type, questions, questions_formated = get_questions(data)
     n_questions, n_participants, theme_answer_rate, avg_answer_per_participant = get_stats(data_dict, overall_stats)
 
@@ -268,7 +322,7 @@ def update_page(selected_theme, selected_question):
 
     # Defining specific color for selected question, and creating annotation list
     bar_colors, annotations_1 = color_question(questions_num, selected_question, answer_rate)
-    bar_opacity = theme_opacity(themes, selected_theme)
+    bar_opacity, annotations_2 = theme_opacity(themes, selected_theme, n_questions, n_answers, n_participants, avg_answer_per_participant)
 
     # Getting global statistics for selected theme
     stat_names = overall_stats
@@ -283,12 +337,47 @@ def update_page(selected_theme, selected_question):
     if question_type[questions_num.index(selected_question)]=="binary":
         # If binary question : figure=heatmap
         # TO DO cf Théo
-        question_data = []
+        question_data = [go.Bar(x=["MAP"], y=[0])]
         question_layout = None
+
+        question_legend, legend_layout = [go.Bar(x=["Scale"], y=[100])], None
+        out_div = [html.Div(children=[
+                            dcc.Graph(id="graph",
+                                figure={'data': question_data,
+                                        'layout': question_layout})]
+                                    ,
+                            style={'width': '70%',
+                                   'height': '100%',
+                                   'display': 'inline-block',
+                                   'padding': '0 0',
+                                   'background-color':colors["background_left"]}),
+                    html.Div(children=[
+                            dcc.Graph(id="bar_legend",
+                                 figure={'data':question_legend,
+                                        'layout': legend_layout})],
+                            style={'width': '30%',
+                                   'height': '100%',
+                                   'float': 'right',
+                                   'display': 'inline-block',
+                                   'padding': '0 0',
+                                   'background-color':colors["background_left"]})
+                                   ]
+
     else:
         top_words = top_words_list[selected_question]
         #question_data, question_layout = plotly_wordcloud(top_words)
         question_data, question_layout = word_cloud_image(top_words)
+        out_div = [html.Div(children=[
+                    dcc.Graph(id="graph",
+                            figure=
+                                {'data': question_data,
+                                'layout': question_layout})],
+                    style={'width': '100%',
+                           'height': '100%',
+                           'margin-left':'auto',
+                           'margin-right':'auto',
+                           'padding': '0 0',
+                           'background-color':colors["background_left"]})]
 
 
     figure_answer_rate = {
@@ -332,25 +421,29 @@ def update_page(selected_theme, selected_question):
                     x=list(data_dict.keys()),
                     xaxis='x1',
                     yaxis='y1',
-                    marker = dict(opacity=bar_opacity)),
+                    marker = dict(opacity=bar_opacity),
+                    hoverinfo = "none"),
                 go.Bar(
                     y= list(n_answers.values()),
                     x=list(data_dict.keys()),
                     xaxis='x2',
                     yaxis='y2',
-                    marker = dict(opacity=bar_opacity)),
+                    marker = dict(opacity=bar_opacity),
+                    hoverinfo = "none"),
                 go.Bar(
                     y= n_participants,
                     x=list(data_dict.keys()),
                     xaxis='x3',
                     yaxis='y3',
-                    marker = dict(opacity=bar_opacity)),
+                    marker = dict(opacity=bar_opacity),
+                    hoverinfo = "none"),
                 go.Bar(
                     y= avg_answer_per_participant,
                     x=list(data_dict.keys()),
                     xaxis='x4',
                     yaxis='y4',
-                    marker = dict(opacity=bar_opacity))
+                    marker = dict(opacity=bar_opacity),
+                    hoverinfo = "none")
                         ],
         'layout': go.Layout(
             title='Statistiques macro',
@@ -364,14 +457,16 @@ def update_page(selected_theme, selected_question):
             yaxis2 = y_axis_dict,
             yaxis3 = y_axis_dict,
             yaxis4 = y_axis_dict,
+            annotations=annotations_2,
             titlefont= chart_title_font,
             plot_bgcolor = colors["background_right"],
             paper_bgcolor = colors["background_right"])
                     }
 
-    figure_graph_question = {'data': question_data, 'layout': question_layout}
 
-    return options, figure_answer_rate, figure_global_stats, figure_graph_question
+
+    return options, figure_answer_rate, figure_global_stats, out_div
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)

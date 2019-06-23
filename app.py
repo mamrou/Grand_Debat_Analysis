@@ -140,8 +140,6 @@ chart_axis_font = dict(
                     tickfont=dict(
                         color=text_color))
 
-
-
 global_stats_axis_font = [
     dict(
         titlefont=dict(
@@ -213,7 +211,8 @@ app.layout = html.Div([
                     'color': "black"}
                 ),
         dcc.Dropdown(id='question_choice'),
-        dcc.Graph(id='graph_question')],
+
+        html.Div(id='left_div')],
 
         style={'width': '59%',
                'height': '100%',
@@ -250,7 +249,7 @@ app.layout = html.Div([
     [Output('question_choice', 'options'),
     Output('answer_rate', 'figure'),
     Output('global_stats', 'figure'),
-    Output('graph_question', 'figure')],
+    Output('left_div', 'children')],
     [Input('tabs', 'value'),
     Input('question_choice','value')])
 
@@ -283,12 +282,16 @@ def update_page(selected_theme, selected_question):
     if question_type[questions_num.index(selected_question)]=="binary":
         # If binary question : figure=heatmap
         # TO DO cf Théo
-        question_data = []
+        question_data = [go.Bar(x=["Guy"], y=[10])]
         question_layout = None
+        out_div = [dcc.Graph({'data': question_data})]
+
     else:
         top_words = top_words_list[selected_question]
         #question_data, question_layout = plotly_wordcloud(top_words)
         question_data, question_layout = word_cloud_image(top_words)
+        out_div = [dcc.Graph({'data': question_data,
+                            'layout': question_layout})]
 
 
     figure_answer_rate = {
@@ -369,9 +372,9 @@ def update_page(selected_theme, selected_question):
             paper_bgcolor = colors["background_right"])
                     }
 
-    figure_graph_question = {'data': question_data, 'layout': question_layout}
 
-    return options, figure_answer_rate, figure_global_stats, figure_graph_question
+
+    return options, figure_answer_rate, figure_global_stats, out_div
 
 if __name__ == '__main__':
     app.run_server(debug=True)

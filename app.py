@@ -171,7 +171,7 @@ def define_index_for_color(delta):
 def get_closed_question_params(data, selected_question):
 
     dic_answers = data[selected_question.lower()]['pct_yes_per_dep']
-
+    print(dic_answers)
     # Define text that will appear when hovering over a department
     hovering_text = ['{} - {}<br>Pourcentage de Oui : {}%<br>Ecart vs. moy. : {}%'.format(dep['code'],dep['name'], round(100*dic_answers[dep['code']][0]), round(100*dic_answers[dep['code']][1])) for dep in departement]
 
@@ -181,10 +181,22 @@ def get_closed_question_params(data, selected_question):
             lon=lon,
             mode='markers',
             text=hovering_text,
-            marker=dict(size=0.5, color= '#a490bd'),
-            showlegend=False,
-            hoverinfo='text'
-        )
+            marker=dict(
+                size=0.5,
+                color= '#a490bd',
+                colorbar=dict(
+                    title = 'Delta vs. moyenne nationale',
+                    titleside = 'top',
+                    tickmode = 'array',
+                    tickvals = [0,4.5,9],
+                    ticktext = ['>-10','0','>+10'],
+                    ticks = 'outside'
+                ),
+            colorscale=[[idx/23, elem] for idx, elem in enumerate(sns.diverging_palette(10, 220, sep=20, n=24).as_hex())]),
+        showlegend=False,
+        hoverinfo='text',
+        
+        ),
     ])
 
     layers=[dict(sourcetype = 'geojson',
@@ -197,6 +209,7 @@ def get_closed_question_params(data, selected_question):
             ) for k in range(len(geojson_layer['features']))]
 
     layout = graph_objs.Layout(
+        title='Pourcentage de Oui - France Metropolitaine : {}%'.format(round(100*dic_answers['all'],1)),
         height=600,
         width=700,
         autosize=True,
@@ -521,3 +534,4 @@ def update_page(selected_theme, selected_question):
 
 if __name__ == '__main__':
     app.run_server(debug=True)
+

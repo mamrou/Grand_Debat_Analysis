@@ -8,10 +8,13 @@ import plotly.plotly as py
 import json
 import plotly.tools as tools
 from utils import *
+import seaborn as sns
+import plotly.graph_objs as graph_objs
 
 #external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 #external_stylesheets = ["https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"]
 
+mapbox_access_token = 'pk.eyJ1IjoibWFyaWVpIiwiYSI6ImNqeDR2bG1ybjAxcmc0OG4wdmNza2luYXkifQ.hECaeMskkpv2CoirEUywlg'
 
 
 
@@ -21,6 +24,10 @@ data_fisc = json.loads(open('data/fiscalite.json').read())
 data_eco = json.loads(open('data/ecologie.json').read())
 data_org = json.loads(open('data/organisation.json').read())
 text_dict = json.loads(open('data/theme.txt').read())
+
+with open("data/departements-version-simplifiee.geojson") as geofile:
+    geojson_layer = json.load(geofile)
+    
 
 themes = {'Dem':"Démocratie et Citoyenneté", 'Fis':"Fiscalité", 'Eco':"Ecologie", 'Org':"Organisation"}
 data_dict = {'Dem':data_dem, 'Fis':data_fisc, 'Eco':data_eco, 'Org':data_org}
@@ -82,6 +89,146 @@ def get_open_questions_words(data):
             pass
 
     return top_words_list
+
+
+def centeroidnp(arr):
+    arr = np.array(arr)
+    length = arr.shape[0]
+    sum_x = np.sum(arr[:, 0])
+    sum_y = np.sum(arr[:, 1])
+    return [sum_x/length, sum_y/length]
+
+
+# Define color for map per department 
+# color = sns.diverging_palette(10, 220, sep=10, n=100)
+color = sns.diverging_palette(10, 220, sep=20, n=24)
+color = color.as_hex()
+
+
+# Store macro-data at departement level (centroid, code, name) for hovering 
+departement = [
+    dict(
+        code = geojson_layer['features'][k]['properties']['code'],
+        name=geojson_layer['features'][k]['properties']['nom'],
+        centroid=centeroidnp(geojson_layer['features'][k]['geometry']['coordinates'][0])
+    )
+    for k in range(len(geojson_layer['features']))]
+
+
+def process_data(dic):
+    
+    for k, v in dic.items():
+        if k.startswith('q'):
+            if v['type']=='open':
+                continue
+            # For each question, get the list of pct_yes_per_dep
+#             print(k)
+            else:
+                sub_dic = dic[k]['pct_yes_per_dep']
+    #             print(sub_dic)
+                # Replace the dpt 97/98 by 2A/2B
+                sub_dic['2A'] = sub_dic.pop('97')
+                sub_dic['2B'] = sub_dic.pop('98')
+                
+                # Update dict by reviewed department names
+                dic[k]['pct_yes_per_dep'] = sub_dic
+                # print(dic[k]['pct_yes_per_dep'])
+                for key, value in dic[k]['pct_yes_per_dep'].items():
+                    # print(key)
+                    # print(value)
+                    if key == 'all':
+                        continue
+                    else:
+
+                        dic[k]['pct_yes_per_dep'][key] = [value, value - dic[k]['pct_yes_per_dep'].get('all', 0)]
+        
+    return dic
+
+# Define lon and lat of department centroid 
+lon = [dep['centroid'][0] for dep in departement]
+lat = [dep['centroid'][1] for dep in departement]
+
+
+# Modify department keys 
+data_dem = process_data(data_dem)
+data_fisc = process_data(data_fisc)
+data_eco = process_data(data_eco)
+data_org = process_data(data_org)
+
+def define_index_for_color(delta):
+    '''
+    Given a delta vs. average, define the index of color to display at departement level
+    '''
+    # Scale to percentage
+    delta = round(delta*100 + 11.5)
+    
+    # Index of colours goes from 0 to 23, we cap the potential index
+    adjusted_value = min(23, max(0, delta))
+
+    return adjusted_value
+
+def get_closed_question_params(data, selected_question):
+
+    dic_answers = data[selected_question.lower()]['pct_yes_per_dep']
+    
+    # Define text that will appear when hovering over a department
+    hovering_text = ['{} - {}<br>Pourcentage de Oui : {}%<br>Ecart vs. moy. : {}%'.format(dep['code'],dep['name'], round(100*dic_answers[dep['code']][0]), round(100*dic_answers[dep['code']][1])) for dep in departement]
+
+    data = graph_objs.Data([
+        graph_objs.Scattermapbox(
+            lat= lat,
+            lon=lon,
+            mode='markers',
+            text=hovering_text,
+            marker=dict(
+                size=0.5,
+                color= '#a490bd',
+                colorbar=dict(
+                    title = 'Delta vs. moyenne nationale',
+                    titleside = 'top',
+                    tickmode = 'array',
+                    tickvals = [0,4.5,9],
+                    ticktext = ['>-10','0','>+10'],
+                    ticks = 'outside'
+                ),
+            colorscale=[[idx/23, elem] for idx, elem in enumerate(sns.diverging_palette(10, 220, sep=20, n=24).as_hex())]),
+        showlegend=False,
+        hoverinfo='text',
+        
+        ),
+    ])
+
+    layers=[dict(sourcetype = 'geojson',
+             source =geojson_layer['features'][k]['geometry'],
+             below="water", 
+             type = 'fill',
+             name=geojson_layer['features'][k]['properties']['nom'],
+             color = color[define_index_for_color(dic_answers[geojson_layer['features'][k]['properties']['code']][1])],
+             opacity=0.8
+            ) for k in range(len(geojson_layer['features']))]
+
+    layout = graph_objs.Layout(
+        title='Pourcentage de Oui - France Metropolitaine : {}%'.format(round(100*dic_answers['all'],1)),
+        height=610,
+        width=730,
+        autosize=True,
+        hovermode='closest',
+        mapbox=dict(
+            layers=layers,
+            accesstoken=mapbox_access_token,
+            bearing=0,
+            center=dict(
+                lat=46.4,
+                lon=2.3
+            ),
+            pitch=0,
+            zoom=4.4,
+            style='light'
+        )
+    )
+
+    return data, layout
+
 
 def color_question(questions_num, selected_question, answer_rate):
     bar_colors = []
@@ -214,6 +361,7 @@ app.layout = html.Div([
 
 
         html.Div([
+
             html.Div([html.P(id="text_theme",
                             style={'font-size':'32px',
                                     'font-style':'italic',
@@ -308,8 +456,10 @@ app.layout = html.Div([
     [Output('question_choice', 'options'),
     Output('answer_rate', 'figure'),
     Output('global_stats', 'figure'),
+
     Output('figure_questions', 'figure'),
     Output('text_theme', 'children')],
+
     [Input('tabs', 'value'),
     Input('question_choice','value')])
 
@@ -342,8 +492,10 @@ def update_page(selected_theme, selected_question):
     if question_type[questions_num.index(selected_question)]=="binary":
         # If binary question : figure=heatmap
         # TO DO cf Théo
-        question_data = [go.Bar(x=["MAP"], y=[0])]
-        question_layout = None
+        quest = questions_num.index(selected_question)
+        data_binary, layout_binary = get_closed_question_params(data, selected_question)
+        question_data = data_binary
+        question_layout = layout_binary
 
 
     else:
@@ -351,9 +503,9 @@ def update_page(selected_theme, selected_question):
         #question_data, question_layout = plotly_wordcloud(top_words)
         question_data, question_layout = word_cloud_image(top_words)
 
+
     figure_questions = {'data': question_data,
                         'layout': question_layout}
-
 
 
     figure_answer_rate = {
@@ -418,9 +570,8 @@ def update_page(selected_theme, selected_question):
             paper_bgcolor = colors["background_content"])
                     }
 
-
-
     return options, figure_answer_rate, figure_global_stats, figure_questions, text_theme
+
 
 
 if __name__ == '__main__':

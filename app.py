@@ -27,7 +27,7 @@ data_org = json.loads(open('data/organisation.json').read())
 with open("data/departements-version-simplifiee.geojson") as geofile:
     geojson_layer = json.load(geofile)
 
-themes = {'Dem':"Démocration et Citoyenneté", 'Fis':"Fiscalité", 'Eco':"Ecologie", 'Org':"Organisation"}
+themes = {'Dem':"Démocratie et Citoyenneté", 'Fis':"Fiscalité", 'Eco':"Ecologie", 'Org':"Organisation"}
 data_dict = {'Dem':data_dem, 'Fis':data_fisc, 'Eco':data_eco, 'Org':data_org}
 
 overall_stats = ['n_questions', 'n_answers','n_participants', 'answer_rate', 'avg_answer_per_participant']

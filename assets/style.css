@@ -28,6 +28,30 @@ body {
   text-align: center;
 }
 
+
+.tabs {
+    color: #e8f1f7;
+    background-color: transparent;
+    border-color: transparent transparent #f3f3f3;
+    border-bottom: 4px solid !important;
+    font-size: 20px;
+    font-weight: bold;
+}
+.tabs {
+    border: 1px solid transparent;
+    border-top-left-radius: .25rem;
+    border-top-right-radius: .25rem;
+    color: #b8c1bf;
+    font-size: 20px;
+}
+
+
+
+///////////////////////////////////////////////
+
+
+
+
 .Select-control {
   background: #191a1a !important;
   color: white !important;

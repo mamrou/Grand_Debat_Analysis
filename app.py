@@ -246,6 +246,7 @@ app.layout = html.Div([
     html.Div([
         dcc.Tabs(
             id="tabs",
+            className="tabs",
             #style={"height":"20","verticalAlign":"middle"},
             children=[
                 dcc.Tab(label="Démocration et Citoyenneté", value="Dem"),

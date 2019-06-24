@@ -9,8 +9,10 @@ import json
 import plotly.tools as tools
 from utils import *
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+#external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 #external_stylesheets = ["https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"]
+
+
 
 
 # Load data
@@ -170,12 +172,19 @@ def theme_opacity(themes, selected_theme, n_questions, n_answers, n_participants
     return bar_opacity, annotations
 
 
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets )
+app = dash.Dash(__name__)
+
+# Load styles
+css_file = 'assets/style.css'
+css_bootstrap_url = 'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css'
+app.css.append_css({
+    "external_url": [css_bootstrap_url, css_file],
+})
 
 text_color = "black"
 
-colors = {'background_right': 'white',#'#8597AF','white',
-         'background_left' : 'white', #'#45546B',
+colors = {'background_right': '#e8f1f7',#'#8597AF','white',
+         'background_left' : '#e8f1f7', #'#45546B',
          'bar_unselected' : '#2678B2',
          'bar_selected' : '#FD7F28'
          }
@@ -225,17 +234,19 @@ chart_title_font = dict(
                     color=text_color)
 
 app.layout = html.Div([
-    html.H1(children='Propositions citoyennes du Grand Débat',
-            style={
-                'textAlign': 'center',
-                'color': text_color,
-                'height':'20%'}
-            )
-            ,
+    # LANDING
+    html.Div(
+        className='section',
+        children=[
+            html.H1('Etudes des propositions citoyennes du Grand Débat', className='landing-text')
+        ]
+    ),
+
     # themes
     html.Div([
         dcc.Tabs(
             id="tabs",
+            className="tabs",
             #style={"height":"20","verticalAlign":"middle"},
             children=[
                 dcc.Tab(label="Démocration et Citoyenneté", value="Dem"),
@@ -247,7 +258,7 @@ app.layout = html.Div([
         )
 
         ],
-        className="row theme_div",
+        className="card-text",
 
         ),
 
@@ -257,14 +268,14 @@ app.layout = html.Div([
         html.Div([dcc.Graph(id='global_stats')],
                 style={'width': '100%',
                         'height': '40%'}),
-                            
+
         html.Div([
             html.H2('Choix des questions',
                     style={
                         'textAlign': 'center',
                         'color': "black"}
                     ),
-            dcc.Dropdown(id='question_choice'),
+            dcc.Dropdown(id='question_choice' , value='Q1'),
 
             html.Div(id='left_div')],
 
@@ -276,6 +287,7 @@ app.layout = html.Div([
             ),
 
         html.Div([
+        
             html.H2('Vision Globale',
                     style={
                         'textAlign': 'center',
@@ -296,6 +308,8 @@ app.layout = html.Div([
 
             style={'width': '100%',
                     'height': '60%'}),
+
+
                     ])
 
 

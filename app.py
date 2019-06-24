@@ -287,6 +287,7 @@ app.layout = html.Div([
             ),
 
         html.Div([
+        
             html.H2('Vision Globale',
                     style={
                         'textAlign': 'center',
@@ -307,6 +308,8 @@ app.layout = html.Div([
 
             style={'width': '100%',
                     'height': '60%'}),
+
+
                     ])
 
 

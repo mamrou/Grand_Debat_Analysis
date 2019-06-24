@@ -38,9 +38,11 @@ body {
     font-weight: bold;
 }
 .tabs {
+    background-color: #FFF;
     border: 1px solid transparent;
     border-top-left-radius: .25rem;
     border-top-right-radius: .25rem;
+    font-family: Tahoma, Arial, Helvetica, "Microsoft YaHei Light", "Microsoft Yahei", sans-serif;
     color: #b8c1bf;
     font-size: 20px;
 }

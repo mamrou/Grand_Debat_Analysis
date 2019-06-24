@@ -210,8 +210,8 @@ def get_closed_question_params(data, selected_question):
 
     layout = graph_objs.Layout(
         title='Pourcentage de Oui - France Metropolitaine : {}%'.format(round(100*dic_answers['all'],1)),
-        height=600,
-        width=700,
+        height=610,
+        width=730,
         autosize=True,
         hovermode='closest',
         mapbox=dict(
@@ -220,7 +220,7 @@ def get_closed_question_params(data, selected_question):
             bearing=0,
             center=dict(
                 lat=46.4,
-                lon=2.2
+                lon=2.3
             ),
             pitch=0,
             zoom=4.4,

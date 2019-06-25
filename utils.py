@@ -76,8 +76,8 @@ def word_cloud_image(top_words):
             range = [0, img_height*scale_factor],
             # the scaleanchor attribute ensures that the aspect ratio stays constant
             scaleanchor = 'x'),
-        width = img_width*scale_factor,
-        height = img_height*scale_factor,
+        #width = img_width*scale_factor,
+        #height = img_height*scale_factor,
         margin = {'l': 0, 'r': 0, 't': 0, 'b': 0},
         images = [go.layout.Image(
             x=0,

@@ -1,5 +1,6 @@
 body {
   background: #191a1a;
+  font-family: 'Montserrat';
 }
 
 ._dash-undo-redo {
@@ -25,6 +26,7 @@ body {
   padding: 20px;
   width: 50%;
   color: #FFF;
+  font-weight: bold;
   text-align: center;
 }
 
@@ -56,11 +58,13 @@ body {
 
 .Select-control {
   background: #191a1a !important;
-  color: white !important;
+  color: black !important;
+  font-size: 32px !important;
 }
 
 .Select-value-label {
-  color: white !important;
+  color: black !important;
+  font-size: 32px !important;
 }
 
 .radius-group {

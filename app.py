@@ -58,7 +58,6 @@ def get_stats(data_dict, n_answers):
 
     return n_participants, completion_rates, n_questions
 
-
 def get_questions(data):
     questions_num = list(data.keys())[5:]
     answer_rate = [data[question]['answer_rate'] for question in questions_num]
@@ -79,6 +78,14 @@ def get_questions(data):
                 [question[i:i+split_len] for i in range(0, len(question), split_len)]))
 
     return questions_num, answer_rate, question_type, questions, questions_formated
+
+def get_question(questions, questions_num, selected_question):
+    for i,ques in enumerate(questions):
+        if selected_question==questions_num[i]:
+            out=ques
+
+    return out
+
 
 def get_open_questions_words(data):
     top_words_list = {}
@@ -296,8 +303,8 @@ text_color = "black"
 
 colors = {'background_content': 'white',#'#8597AF','white',
          'background' : '#e8f1f7',
-         'bar_unselected' : 'rgb(80, 220, 100)',
-         'bar_selected' : 'rgb(46, 139, 87)'
+         'bar_unselected' : '#C5D5E4',
+         'bar_selected' : '#19647E'
          }
 
 transparency = {"full":1,
@@ -335,7 +342,8 @@ app.layout = html.Div([
     html.Div(
         className='section',
         children=[
-            html.H1('Etudes des propositions citoyennes du Grand Débat', className='landing-text')
+            html.H1('Le grand débat national',
+                    className='landing-text')
         ]
     ),
 
@@ -423,16 +431,33 @@ app.layout = html.Div([
                             'color': "black",
                             'border-top': "10px white solid"}
                         ),
-                dcc.Dropdown(id='question_choice' ,
-                             value='Q1',
-                             style={'height':'80px',
-                                    'font-size': "50%",
-                                    'min-height': '1px'}),
+
+                dcc.Tabs(
+                    id="question_choice",
+                    className="tabs",
+                    value='Q1'),
+
+                html.Div([html.P(id="text_question",
+                                style={'font-size':'200%',
+                                        'font-style':'italic',
+                                        'line-height':'50px',
+                                        'position': 'relative',
+                                        'textAlign': 'center',
+                                        'border-left':'30px white solid',
+                                        'border-right':'20px white solid'
+                                        })
+                                ],
+                            style={'width': '100%',
+                                    'height': 200,
+                                    'display': 'inline-block',
+                                    'background-color':colors['background_content']
+                                    }),
 
                 dcc.Graph(id='figure_questions',
                             style={'border-left': "100px white solid",
                                     'height': '80%',
-                                    'width': '80%'})],
+                                    'width': '80%',
+                                    'margin-top': -75})],
 
                 style={'width': '59%',
                        'height': 1300,
@@ -474,11 +499,12 @@ app.layout = html.Div([
 
 
 @app.callback(
-    [Output('question_choice', 'options'),
+    [Output('question_choice', 'children'),
     Output('answer_rate', 'figure'),
     Output('global_stats', 'figure'),
     Output('figure_questions', 'figure'),
-    Output('text_theme', 'children')],
+    Output('text_theme', 'children'),
+    Output('text_question', 'children')],
     [Input('tabs', 'value'),
     Input('question_choice','value')])
 
@@ -493,7 +519,9 @@ def update_page(selected_theme, selected_question):
         selected_question=questions_num[0]
 
     # Reformating possible questions of selected theme for display
-    options = [{'label': questions_num[i] + " - " + question, 'value':questions_num[i]} for i,question in enumerate(questions)]
+    options = [dcc.Tab(label=questions_num[i], value=questions_num[i]) for i,question in enumerate(questions)]
+
+    question = get_question(questions, questions_num, selected_question)
 
     # Defining specific color for selected question, and creating annotation list
     bar_colors, annotations_1 = color_question(questions_num, selected_question, answer_rate)
@@ -589,7 +617,7 @@ def update_page(selected_theme, selected_question):
 
 
 
-    return options, figure_answer_rate, figure_global_stats, figure_questions, text_theme
+    return options, figure_answer_rate, figure_global_stats, figure_questions, text_theme, question
 
 
 if __name__ == '__main__':

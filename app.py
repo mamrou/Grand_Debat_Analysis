@@ -236,7 +236,7 @@ def get_closed_question_params(data, selected_question):
             ) for k in range(len(geojson_layer['features']))]
 
     layout = go.Layout(
-        title='Pourcentage de Oui - France Metropolitaine : {}%'.format(round(100*dic_answers['all'],1)),
+        title='Pourcentage de Oui - delta vs. moyenne nationale ({}%)'.format(round(100*dic_answers['all'],1)),
         autosize=True,
         hovermode='closest',
         mapbox=dict(
@@ -412,14 +412,14 @@ app.layout = html.Div([
                                   "margin-top": -75})],
 
                         style={'width': '60%',
-                                'height': 550,
+                                'height': 600,
                                 'float':'right',
                                 'border-left': "20px #e8f1f7 solid",
                                 'border-right': "20px #e8f1f7 solid",
                                 'border-top': "20px #e8f1f7 solid"
                                 })],
                 style={'width': '100%',
-                        'height': '500px',
+                        'height': 600,
                         'background-color':colors['background_content']
                         }),
 
@@ -434,7 +434,7 @@ app.layout = html.Div([
 
                 dcc.Tabs(
                     id="question_choice",
-                    className="tabs",
+                    className="tab",
                     value='Q1'),
 
                 html.Div([html.P(id="text_question",
@@ -455,9 +455,9 @@ app.layout = html.Div([
 
                 dcc.Graph(id='figure_questions',
                             style={'border-left': "100px white solid",
-                                    'height': '80%',
+                                    'height': '75%',
                                     'width': '80%',
-                                    'margin-top': -75})],
+                                    'margin-top': -60})],
 
                 style={'width': '59%',
                        'height': 1300,

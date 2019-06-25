@@ -423,7 +423,11 @@ app.layout = html.Div([
                             'color': "black",
                             'border-top': "10px white solid"}
                         ),
-                dcc.Dropdown(id='question_choice' , value='Q1'),
+                dcc.Dropdown(id='question_choice' ,
+                             value='Q1',
+                             style={'height':'80px',
+                                    'font-size': "50%",
+                                    'min-height': '1px'}),
 
                 dcc.Graph(id='figure_questions',
                             style={'border-left': "100px white solid",
@@ -446,8 +450,9 @@ app.layout = html.Div([
 
                 dcc.Graph(id='answer_rate',
                           style={
-                            'height': 1050,
+                            'height': 500,
                             "display": "block",
+                            "margin-top": 300,
                             "margin-left": "auto",
                             "margin-right": "auto"})],
 

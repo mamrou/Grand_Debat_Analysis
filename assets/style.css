@@ -44,7 +44,7 @@ body {
     border-top-right-radius: .25rem;
     font-family: Tahoma, Arial, Helvetica, "Microsoft YaHei Light", "Microsoft Yahei", sans-serif;
     color: #b8c1bf;
-    font-size: 26px;
+    font-size: 20px;
 }
 
 
@@ -56,11 +56,13 @@ body {
 
 .Select-control {
   background: #191a1a !important;
-  color: white !important;
+  color: black !important;
+  font-size: 32px !important;
 }
 
 .Select-value-label {
-  color: white !important;
+  color: black !important;
+  font-size: 32px !important;
 }
 
 .radius-group {
